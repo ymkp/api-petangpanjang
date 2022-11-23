@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import {
@@ -16,6 +16,11 @@ import { MemberService } from '../services/member.service';
 export class MemberController {
   constructor(private readonly service: MemberService) {}
 
+  @Get('active')
+  @ApiOperation({ summary: 'get active members' })
+  public async getActiveMembers(): Promise<MemberOutputDTO[]> {
+    return await this.service.getActiveMembers();
+  }
   // create new member
   @Post('new')
   @ApiOperation({
@@ -28,15 +33,6 @@ export class MemberController {
   }
 
   // get member info from member no
-  @Post('search/memberNo')
-  @ApiOperation({
-    summary: 'get member info by memberno',
-  })
-  public async getMemberInfoByMemberNo(
-    @Body() input: MemberSearchByMemberNoInputDTO,
-  ): Promise<MemberOutputDTO> {
-    return await this.service.getMemberByMemberNo(input.memberNo);
-  }
 
   // get member info from member no
   @Post('search/cardNo')

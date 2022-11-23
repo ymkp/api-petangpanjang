@@ -16,13 +16,12 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '100mb' }));
   const configService = app.get(ConfigService);
   const corsOptions = {
-    origin: '*',
-    // [
-    //   'http://localhost:4200',
-    //   'http://127.0.0.1:4200',
-    //   'https://admin.petangpanjang.com',
-    //   'https://cashier.petangpanjang.com',
-    // ],
+    origin: [
+      'http://localhost:8888',
+      'http://127.0.0.1:8888',
+      'https://admin.petangpanjang.com',
+      'https://cashier.petangpanjang.com',
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     preflightContinue: false,
     optionsSuccessStatus: 204,

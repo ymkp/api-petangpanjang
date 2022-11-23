@@ -24,19 +24,4 @@ export class MemberCardService {
   }
 
   // assign a user to a card
-  public async assignUserToCard(
-    input: MemberCardAssignUserDTO,
-  ): Promise<MemberCardOutputDTO> {
-    const card = await this.cardRepo.getById(input.id);
-    if (card.member)
-      throw new BadRequestException('Member Card sudah memiliki Member');
-    const member = await this.memberRepo.getById(input.memberId);
-    card.member = member;
-    const now = new Date(Date.now());
-    card.publishedAt = now;
-    now.setDate(now.getDate() + 365);
-    card.expiredAt = now;
-    await this.cardRepo.save(card);
-    return plainToInstance(MemberCardOutputDTO, card);
-  }
 }

@@ -21,9 +21,9 @@ export class TransactionItemInputDTO {
 }
 
 export class TransactionCreateInputDTO {
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsNumber()
-  @IsOptional()
+  @IsNotEmpty()
   memberId: number;
 
   @ApiProperty()
@@ -32,6 +32,18 @@ export class TransactionCreateInputDTO {
   @ValidateNested({ each: true })
   @Type(() => TransactionItemInputDTO)
   data: TransactionItemInputDTO[];
+}
+
+export class AddMemberToTransactionInputDTO {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  id: number;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  memberId: number;
 }
 
 export class TransactionEditInputDTO {

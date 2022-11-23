@@ -9,5 +9,8 @@ export class MemberOutputDTO {
   name: string;
 
   @Expose()
-  memberNo: string;
+  phone: string;
+
+  @Expose()
+  cardNo: string;
 }

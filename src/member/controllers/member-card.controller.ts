@@ -26,15 +26,4 @@ export class MemberCardController {
   ): Promise<MemberCardOutputDTO> {
     return await this.service.createNewMemberCard(input);
   }
-
-  // assign a user to a card
-  @Patch('assign/member')
-  @ApiOperation({
-    summary: 'assign member to card',
-  })
-  public async assignUserToMemberCard(
-    @Body() input: MemberCardAssignUserDTO,
-  ): Promise<MemberCardOutputDTO> {
-    return await this.service.assignUserToCard(input);
-  }
 }

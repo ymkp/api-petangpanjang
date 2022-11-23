@@ -1,6 +1,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { ItemOutputDTO } from 'src/item/dtos/item-output.dto';
 import { MemberOutputDTO } from 'src/member/dtos/member-output.dto';
+import { TransactionItemOutputDTO } from './transaction-item-output.dto';
 
 @Exclude()
 export class TransactionOutputDTO {
@@ -8,8 +9,8 @@ export class TransactionOutputDTO {
   id: number;
 
   @Expose()
-  @Type(() => ItemOutputDTO)
-  items: ItemOutputDTO[];
+  @Type(() => TransactionItemOutputDTO)
+  items: TransactionItemOutputDTO[];
 
   @Expose()
   price: number;

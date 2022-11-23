@@ -1,7 +1,16 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import {
+  AddMemberToTransactionInputDTO,
   TransactionCreateInputDTO,
   TransactionEditInputDTO,
 } from '../dtos/transaction-input.dto';
@@ -24,6 +33,17 @@ export class TransactionController {
     return await this.service.getAllTransaction();
   }
 
+  // get all transactions by date
+  @Get('member/:cardNo')
+  @ApiOperation({
+    summary: 'get all transactions by cardNo',
+  })
+  public async getAllTransactionsByCardNo(
+    @Param('cardNo') cardNo: string,
+  ): Promise<TransactionOutputDTO[]> {
+    return await this.service.getAllTransactionByCardNo(cardNo);
+  }
+
   // create a new transaction
 
   @Post('new')
@@ -37,14 +57,14 @@ export class TransactionController {
   }
 
   // edit a transaction
-  @Patch('edit')
+  @Patch('edit/member')
   @ApiOperation({
-    summary: 'edit a transaction',
+    summary: 'add a member to transaction',
   })
-  public async editATransaction(
-    @Body() input: TransactionEditInputDTO,
+  public async addMemberToTransaction(
+    @Body() input: AddMemberToTransactionInputDTO,
   ): Promise<TransactionOutputDTO> {
-    return await this.service.editATransaction(input);
+    return await this.service.addMemberToATransaction(input);
   }
 
   // close a transaction

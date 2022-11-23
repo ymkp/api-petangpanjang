@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class MemberInputRegisterDTO {
   @ApiProperty()
@@ -7,15 +7,15 @@ export class MemberInputRegisterDTO {
   @IsNotEmpty()
   name: string;
 
-  // @ApiProperty()
-  // @IsString()
-  // @IsNotEmpty()
-  // memberNo: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  phone: string;
 
-  // @ApiProperty()
-  // @IsString()
-  // @IsNotEmpty()
-  // cardNo: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  cardNo: string;
 }
 
 export class MemberSearchByMemberNoInputDTO {
