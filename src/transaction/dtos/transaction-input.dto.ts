@@ -1,5 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 
 export class TransactionItemInputDTO {
   @ApiProperty()
@@ -14,10 +21,16 @@ export class TransactionItemInputDTO {
 }
 
 export class TransactionCreateInputDTO {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   memberId: number;
+
+  @ApiProperty()
+  @IsArray()
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => TransactionItemInputDTO)
   data: TransactionItemInputDTO[];
 }
 
@@ -27,10 +40,15 @@ export class TransactionEditInputDTO {
   @IsNotEmpty()
   id: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   memberId: number;
 
+  @ApiProperty()
+  @IsArray()
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => TransactionItemInputDTO)
   data: TransactionItemInputDTO[];
 }

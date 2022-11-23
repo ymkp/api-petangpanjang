@@ -29,6 +29,7 @@ export class TransactionService {
   public async createNewTransaction(
     input: TransactionCreateInputDTO,
   ): Promise<TransactionOutputDTO> {
+    console.log(input);
     const shop = await this.getShopByCTX();
     const transaction = await this.trxRepo.save({
       shopId: 1,
