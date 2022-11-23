@@ -43,3 +43,22 @@ export class TransactionOutputDTO {
   @Expose()
   updatedAt: Date;
 }
+
+@Exclude()
+export class TransactionOutputMiniDTO {
+  @Expose()
+  id: number;
+
+  @Expose()
+  @Type(() => MemberOutputDTO)
+  member: MemberOutputDTO;
+
+  @Expose()
+  closedAt: Date;
+
+  @Expose()
+  createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
+}

@@ -13,4 +13,7 @@ export class MemberOutputDTO {
 
   @Expose()
   cardNo: string;
+
+  @Expose()
+  startedAt: string;
 }

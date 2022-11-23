@@ -1,5 +1,5 @@
 import { Member } from 'src/member/entities/member.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
+import { ShopShift } from 'src/shop/entities/shop-shift.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,26 +7,16 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { TransactionItem } from './transaction-item.entity';
+import { TransactionPaymentType } from './transaction-payment-type.entity';
 
-@Entity('transaction')
-export class Transaction {
+@Entity('transaction_member_recap')
+export class TransactionMemberRecap {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @ManyToOne(() => Shop)
-  @JoinColumn()
-  shop: Shop;
-
-  @Column()
-  shopId: number;
-
-  @OneToMany(() => TransactionItem, (d) => d.transaction)
-  items: TransactionItem[];
 
   @Column({ type: 'int', default: 0 })
   price: number;
@@ -53,8 +43,21 @@ export class Transaction {
   @Column({ nullable: true, default: null })
   memberId: number;
 
+  @ManyToOne(() => TransactionPaymentType, { nullable: true })
+  @JoinColumn()
+  paymentType: TransactionPaymentType;
+
+  @Column({ nullable: true, default: null })
+  paymentTypeId: number;
+
+  @Column({ type: 'int', nullable: true, default: null })
+  paid: number;
+
+  @Column({ type: 'int', nullable: true, default: null })
+  change: number;
+
   @Column({ type: 'datetime', nullable: true, default: null })
-  closedAt: Date;
+  paymentAt: Date;
 
   @CreateDateColumn({ name: 'createdAt', nullable: true })
   createdAt: Date;

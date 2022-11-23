@@ -10,12 +10,15 @@ export class MemberCardOutputDTO {
   cardNo: string;
 
   @Expose()
-  @Type(() => MemberOutputDTO)
-  member: MemberOutputDTO;
+  lockerNo: string;
 
-  @Expose()
-  publishedAt: Date;
+  // @Expose()
+  // @Type(() => MemberOutputDTO)
+  // member: MemberOutputDTO;
 
-  @Expose()
-  expiredAt: Date;
+  // @Expose()
+  // publishedAt: Date;
+
+  // @Expose()
+  // expiredAt: Date;
 }

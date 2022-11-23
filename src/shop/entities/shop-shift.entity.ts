@@ -22,10 +22,10 @@ export class ShopShift {
   @Column()
   shopId: number;
 
-  @Column({ type: 'date', nullable: true, default: null })
+  @Column({ type: 'datetime', nullable: true, default: null })
   startedAt: Date;
 
-  @Column({ type: 'date', nullable: true, default: null })
+  @Column({ type: 'datetime', nullable: true, default: null })
   endedAt: Date;
 
   @CreateDateColumn({ name: 'createdAt', nullable: true })

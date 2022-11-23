@@ -30,7 +30,6 @@ export class AuthService {
 
   async getUserByNRP(nrp: string): Promise<IdNameStringDTO> {
     const res = await this.userService.getUserIDNameDTOByNRP(nrp);
-    console.log('getuserbynrp res : ', res);
     return res;
   }
 

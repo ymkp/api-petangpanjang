@@ -3,18 +3,24 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Member } from 'src/member/entities/member.entity';
+import { BaseApiResponse } from 'src/shared/dtos/base-api-response.dto';
 import {
   AddMemberToTransactionInputDTO,
   TransactionCreateInputDTO,
   TransactionEditInputDTO,
+  TransactionPayInputDTO,
 } from '../dtos/transaction-input.dto';
-import { TransactionOutputDTO } from '../dtos/transaction-output.dto';
+import {
+  TransactionOutputDTO,
+  TransactionOutputMiniDTO,
+} from '../dtos/transaction-output.dto';
 import { TransactionService } from '../services/transaction.service';
 
 @ApiTags('transaction')
@@ -23,6 +29,14 @@ import { TransactionService } from '../services/transaction.service';
 // @ApiBearerAuth()
 export class TransactionController {
   constructor(private readonly service: TransactionService) {}
+
+  @Post('pay')
+  @ApiOperation({ summary: 'pay the transaction' })
+  public async payTransaction(
+    @Body() body: TransactionPayInputDTO,
+  ): Promise<BaseApiResponse<string>> {
+    return await this.service.payCompleteTransaction(body);
+  }
 
   // get all transactions by date
   @Get('all')
@@ -33,6 +47,26 @@ export class TransactionController {
     return await this.service.getAllTransaction();
   }
 
+  @Get('member-complete-id/:id')
+  @ApiOperation({
+    summary: 'get complete transactions by member id',
+  })
+  public async getTransactionCoompleteDetailByMemberId(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Member> {
+    return await this.service.getTransactionCoompleteDetailByMemberId(id);
+  }
+
+  @Get('member-complete/:cardNo')
+  @ApiOperation({
+    summary: 'get complete transactions by cardNo',
+  })
+  public async getTransactionCoompleteDetailByCardNo(
+    @Param('cardNo') cardNo: string,
+  ): Promise<Member> {
+    return await this.service.getTransactionCoompleteDetailByCardNo(cardNo);
+  }
+
   // get all transactions by date
   @Get('member/:cardNo')
   @ApiOperation({
@@ -40,7 +74,7 @@ export class TransactionController {
   })
   public async getAllTransactionsByCardNo(
     @Param('cardNo') cardNo: string,
-  ): Promise<TransactionOutputDTO[]> {
+  ): Promise<TransactionOutputMiniDTO[]> {
     return await this.service.getAllTransactionByCardNo(cardNo);
   }
 

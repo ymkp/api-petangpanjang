@@ -1,3 +1,5 @@
+import { TransactionMemberRecap } from 'src/transaction/entities/transaction-member-recap.entity';
+import { Transaction } from 'src/transaction/entities/transaction.entity';
 import {
   Column,
   CreateDateColumn,
@@ -5,6 +7,8 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -31,10 +35,20 @@ export class Member {
   @Column()
   cardNo: string;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'datetime', nullable: true, default: null })
   startedAt: Date;
 
-  @Column({ type: 'date', nullable: true, default: null })
+  @OneToMany(() => Transaction, (t) => t.member)
+  transactions: Transaction[];
+
+  @OneToOne(() => TransactionMemberRecap, (t) => t.member, { nullable: true })
+  @JoinColumn()
+  transactionRecap: TransactionMemberRecap;
+
+  @Column({ nullable: true, default: null })
+  transactionRecapId: number;
+
+  @Column({ type: 'datetime', nullable: true, default: null })
   stoppedAt: Date;
 
   @CreateDateColumn({ name: 'createdAt', nullable: true })

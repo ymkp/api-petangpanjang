@@ -17,7 +17,6 @@ export function createRequestContext(request: Request): RequestContext {
     ? request.header(FORWARDED_FOR_TOKEN_HEADER)
     : request.ip;
   // TODO : get user agent
-  // console.log(request.headers);
 
   // If request.user does not exist, we explicitly set it to null.
   ctx.user = request.user

@@ -7,19 +7,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('member_card')
-export class MemberCard {
+@Entity('transaction_payment_type')
+export class TransactionPaymentType {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  cardNo: string;
-
-  @Column({ default: true })
-  isAvailable: boolean;
-
-  @Column({ nullable: true, default: null })
-  lockerNo: string;
+  name: string;
 
   @CreateDateColumn({ name: 'createdAt', nullable: true })
   createdAt: Date;

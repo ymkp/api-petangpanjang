@@ -64,3 +64,25 @@ export class TransactionEditInputDTO {
   @Type(() => TransactionItemInputDTO)
   data: TransactionItemInputDTO[];
 }
+
+export class TransactionPayInputDTO {
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  id: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  memberId: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  paid: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  paymentTypeId: number;
+}

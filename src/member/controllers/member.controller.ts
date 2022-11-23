@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { MemberCardOutputDTO } from '../dtos/member-card.output.dto';
 import {
   MemberInputRegisterDTO,
   MemberSearchByCardNoInputDTO,
@@ -16,11 +17,26 @@ import { MemberService } from '../services/member.service';
 export class MemberController {
   constructor(private readonly service: MemberService) {}
 
-  @Get('active')
+  @Get('card/available')
+  @ApiOperation({
+    summary: 'get available cards',
+  })
+  public async getAvailableCards(): Promise<MemberCardOutputDTO[]> {
+    return await this.service.getAvailableCards();
+  }
+
+  @Get('members/active')
   @ApiOperation({ summary: 'get active members' })
   public async getActiveMembers(): Promise<MemberOutputDTO[]> {
     return await this.service.getActiveMembers();
   }
+
+  @Get('members/completed')
+  @ApiOperation({ summary: 'get completed members' })
+  public async getCompletedMembers(): Promise<MemberOutputDTO[]> {
+    return await this.service.getCompletedMembers();
+  }
+
   // create new member
   @Post('new')
   @ApiOperation({

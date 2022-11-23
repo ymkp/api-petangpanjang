@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { ItemRepository } from 'src/item/repositories/item.repository';
+import { MemberCardRepository } from 'src/member/repositories/member-card.repository';
 import { MemberRepository } from 'src/member/repositories/member.repository';
 import { Shop } from 'src/shop/entities/shop.entity';
 import { ShopRepository } from 'src/shop/repositories/shop.repository';
@@ -8,12 +13,18 @@ import { In, IsNull } from 'typeorm';
 import {
   AddMemberToTransactionInputDTO,
   TransactionCreateInputDTO,
-  TransactionEditInputDTO,
+  TransactionPayInputDTO,
 } from '../dtos/transaction-input.dto';
-import { TransactionOutputDTO } from '../dtos/transaction-output.dto';
-import { Transaction } from '../entities/transaction.entity';
+import {
+  TransactionOutputDTO,
+  TransactionOutputMiniDTO,
+} from '../dtos/transaction-output.dto';
 import { TransactionItemRepository } from '../repositories/transaction-item.repository';
+import { TransactionMemberRecapRepository } from '../repositories/transaction-member-recap.repository';
+import { TransactionPaymentTypeRepository } from '../repositories/transaction-payment-type.repository';
 import { TransactionRepository } from '../repositories/transaction.repository';
+import { Member } from 'src/member/entities/member.entity';
+import { BaseApiResponse } from 'src/shared/dtos/base-api-response.dto';
 
 @Injectable()
 export class TransactionService {
@@ -23,6 +34,9 @@ export class TransactionService {
     private readonly trxItemRepo: TransactionItemRepository,
     private readonly shopRepo: ShopRepository,
     private readonly memberRepo: MemberRepository,
+    private readonly trxMemberRecapRepo: TransactionMemberRecapRepository,
+    private readonly trxPaymentTypeRepo: TransactionPaymentTypeRepository,
+    private readonly cardRepo: MemberCardRepository,
   ) {}
   // get all transactions by date
   // create a new transaction
@@ -30,7 +44,6 @@ export class TransactionService {
   public async createNewTransaction(
     input: TransactionCreateInputDTO,
   ): Promise<TransactionOutputDTO> {
-    console.log(input);
     const shop = await this.getShopByCTX();
     const transaction = await this.trxRepo.save({
       shopId: 1,
@@ -77,6 +90,7 @@ export class TransactionService {
       transaction.member = member;
     }
     await this.trxRepo.save(transaction);
+    await this.recountTrxRecap(input.memberId);
     return plainToInstance(TransactionOutputDTO, transaction);
   }
   // edit a transaction
@@ -100,11 +114,10 @@ export class TransactionService {
 
   public async getAllTransactionByCardNo(
     cardNo: string,
-  ): Promise<TransactionOutputDTO[]> {
+  ): Promise<TransactionOutputMiniDTO[]> {
     const member = await this.memberRepo.findOne({
       where: { cardNo, stoppedAt: IsNull() },
     });
-    console.log(cardNo, member);
     if (!member) throw new NotFoundException('Memmber tidak ditemukan');
     const trxs = await this.trxRepo.find({
       relations: ['member'],
@@ -112,13 +125,142 @@ export class TransactionService {
         memberId: member.id,
       },
     });
-    console.log(trxs.length);
-    return plainToInstance(TransactionOutputDTO, trxs);
+    return plainToInstance(TransactionOutputMiniDTO, trxs);
+  }
+
+  public async getTransactionCoompleteDetailByCardNo(
+    cardNo: string,
+  ): Promise<Member> {
+    const member = await this.memberRepo.findOne({
+      where: { cardNo, stoppedAt: IsNull() },
+      withDeleted: true,
+      relations: [
+        'card',
+        'transactions',
+        'transactions.items',
+        'transactionRecap',
+        'transactionRecap.paymentType',
+      ],
+    });
+    if (!member) throw new NotFoundException('member tidak ditemukan');
+    return member;
+  }
+
+  public async getTransactionCoompleteDetailByMemberId(
+    id: number,
+  ): Promise<Member> {
+    const member = await this.memberRepo.findOne({
+      where: { id },
+      withDeleted: true,
+      relations: [
+        'card',
+        'transactions',
+        'transactions.items',
+        'transactionRecap',
+        'transactionRecap.paymentType',
+      ],
+    });
+    if (!member) throw new NotFoundException('member tidak ditemukan');
+    return member;
+  }
+
+  public async payCompleteTransaction(
+    input: TransactionPayInputDTO,
+  ): Promise<BaseApiResponse<string>> {
+    const trxRecap = await this.trxMemberRecapRepo.findOne({
+      where: { memberId: input.memberId, id: input.id },
+    });
+    if (!trxRecap) throw new NotFoundException('Transaksi tidak ditemukan');
+    const paymentType = await this.trxPaymentTypeRepo.getById(
+      input.paymentTypeId,
+    );
+    const change = trxRecap.total - input.paid;
+    if (change < 0) throw new BadRequestException('Pembayaran tidak valid');
+
+    // ? close transactions
+    trxRecap.paid = input.paid;
+    trxRecap.change = change;
+    trxRecap.paymentType = paymentType;
+    trxRecap.paymentAt = new Date(Date.now());
+    await this.trxMemberRecapRepo.save(trxRecap);
+    const trxs = await this.trxRepo.find({
+      where: { memberId: input.memberId },
+    });
+    trxs.forEach((t) => {
+      t.closedAt = new Date(Date.now());
+    });
+    await this.trxRepo.save(trxs);
+
+    // ? close member
+    const member = await this.memberRepo.getById(input.memberId);
+    member.stoppedAt = new Date(Date.now());
+    await this.memberRepo.save(member);
+    const card = await this.cardRepo.getById(member.cardId);
+    card.isAvailable = true;
+    await this.cardRepo.save(card);
+    return {
+      data: 'ok',
+      meta: {},
+    };
   }
 
   // close a transaction
 
   public async getShopByCTX(): Promise<Shop> {
     return await this.shopRepo.findOne({ where: { id: 1 } });
+  }
+
+  private async recountTrxRecap(memberId: number) {
+    const member = await this.memberRepo.findOne({
+      select: ['id', 'transactionRecapId'],
+      where: { id: memberId },
+    });
+
+    let trxRecap = await this.trxMemberRecapRepo.findOne({
+      where: { memberId },
+    });
+    if (!trxRecap) {
+      trxRecap = await this.trxMemberRecapRepo.save({
+        price: 0,
+        tax: 0,
+        taxPctg: 0,
+        service: 0,
+        servicePctg: 0,
+        total: 0,
+        memberId,
+      });
+    }
+    if (!member.transactionRecapId) {
+      member.transactionRecapId = trxRecap.id;
+      await this.memberRepo.save(member);
+    }
+    const trxs = await this.trxRepo.find({
+      where: { memberId },
+    });
+
+    let price = 0;
+    let tax = 0;
+    let taxPctg = 0;
+    let service = 0;
+    let servicePctg = 0;
+    let total = 0;
+    trxs.forEach((t) => {
+      price += t.price;
+      tax += t.tax;
+      taxPctg += t.taxPctg;
+      service += t.service;
+      servicePctg += t.servicePctg;
+      total += t.total;
+    });
+    taxPctg = Math.round(taxPctg / trxs.length);
+    servicePctg = Math.round(servicePctg / trxs.length);
+
+    trxRecap.price = price;
+    trxRecap.tax = tax;
+    trxRecap.taxPctg = taxPctg;
+    trxRecap.service = service;
+    trxRecap.servicePctg = servicePctg;
+    trxRecap.total = total;
+    await this.trxMemberRecapRepo.save(trxRecap);
   }
 }
